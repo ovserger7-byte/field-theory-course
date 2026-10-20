@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Теория поля: актуальный конспект лекций и задачи. Курс С. Г. Овчинникова, Мехмат МГУ, осень 2026.">
+  <meta name="theme-color" content="#163a50">
+  <title>Теория поля — конспект и задачи</title>
+  <style>
+    :root { color-scheme: light; --ink: #183548; --muted: #586875; --paper: #f5f3ed; --line: #d8dedc; --accent: #a9662c; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    a { color: inherit; text-underline-offset: .22em; }
+    a:focus-visible { outline: 3px solid var(--accent); outline-offset: 5px; }
+    .wrap { width: min(960px, calc(100% - 48px)); margin: auto; }
+    header { border-top: 5px solid var(--ink); padding: 54px 0 46px; }
+    .eyebrow { margin: 0 0 26px; color: var(--muted); font-size: .76rem; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0; font: 500 clamp(3rem, 8vw, 5rem)/1.1 Georgia, "Times New Roman", serif; letter-spacing: -.035em; }
+    .subtitle { margin: 20px 0 8px; font-size: 1.2rem; }
+    .author { margin: 0; color: var(--muted); font-size: .95rem; }
+    main { padding-bottom: 60px; }
+    .materials { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    article { display: flex; flex-direction: column; padding: 30px; border: 1px solid var(--line); background: #fffefa; }
+    .number { margin: 0 0 26px; color: var(--accent); font-size: .8rem; font-weight: 700; letter-spacing: .1em; }
+    h2 { margin: 0 0 12px; font: 500 1.85rem/1.2 Georgia, "Times New Roman", serif; }
+    .description { flex: 1; margin: 0 0 28px; color: var(--muted); }
+    .file-info { margin: 0 0 18px; color: var(--muted); font-size: .85rem; }
+    .open { display: inline-block; padding: 12px 20px; background: var(--ink); color: white; text-decoration: none; text-align: center; font-weight: 600; }
+    .open:hover { background: #285773; }
+    .download { align-self: flex-start; margin-top: 15px; font-size: .85rem; }
+    .update { margin-top: 30px; padding: 24px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .update p { margin: 0; }
+    .update .hint { margin-top: 7px; color: var(--muted); font-size: .9rem; max-width: 720px; }
+    footer { display: flex; justify-content: space-between; gap: 16px; padding: 0 0 32px; color: var(--muted); font-size: .8rem; }
+    @media (max-width: 650px) {
+      .wrap { width: calc(100% - 32px); }
+      header { padding: 34px 0; }
+      .eyebrow { margin-bottom: 20px; }
+      .materials { grid-template-columns: 1fr; gap: 16px; }
+      article { padding: 24px; }
+      .number { margin-bottom: 18px; }
+      footer { flex-direction: column; gap: 5px; }
+    }
+    @media print {
+      body, article { background: white; }
+      header { padding-top: 20px; }
+      .download { display: none; }
+      .open { color: var(--ink); background: none; border: 1px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <p class="eyebrow">Мехмат МГУ · Осень 2026</p>
+      <h1>Теория поля</h1>
+      <p class="subtitle">Конспект лекций и задачи</p>
+      <p class="author">С. Г. Овчинников</p>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="materials" aria-label="Материалы курса">
+      <article>
+        <p class="number" aria-hidden="true">01 / ЛЕКЦИИ</p>
+        <h2>Конспект</h2>
+        <p class="description">Основной текст курса, выводы, примеры и приложения.</p>
+        <p class="file-info">PDF · 1,2 МБ</p>
+        <a class="open" href="lectures.pdf?v=39664f341e59" aria-label="Открыть конспект лекций в PDF">Открыть конспект</a>
+        <a class="download" href="lectures.pdf?v=39664f341e59" download="field-theory-lectures.pdf">Скачать PDF</a>
+      </article>
+      <article>
+        <p class="number" aria-hidden="true">02 / ПРАКТИКА</p>
+        <h2>Задачи</h2>
+        <p class="description">Условия задач для семинаров и самостоятельной работы.</p>
+        <p class="file-info">PDF · 0,5 МБ</p>
+        <a class="open" href="problems.pdf?v=efef32df4651" aria-label="Открыть задачник в PDF">Открыть задачи</a>
+        <a class="download" href="problems.pdf?v=efef32df4651" download="field-theory-problems.pdf">Скачать PDF</a>
+      </article>
+    </section>
+    <div class="update">
+      <p>Обновлено <time datetime="2026-10-20T18:29:22.7476604Z">20.10.2026, 21:29 МСК</time></p>
+      <p class="hint">Материалы дополняются и исправляются. Сохраните ссылку на эту страницу: здесь всегда доступны опубликованные актуальные версии.</p>
+    </div>
+  </main>
+  <footer class="wrap">
+    <span>Теория поля · Учебные материалы</span>
+    <a href="https://github.com/ovserger7-byte/field-theory-course/commits/main/">История обновлений</a>
+  </footer>
+</body>
+</html>
