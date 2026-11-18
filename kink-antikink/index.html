@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#183d36">
+  <meta name="description" content="Численный эксперимент: столкновение кинка и антикинка в классической φ⁴-теории.">
+  <title>Кинк и антикинк · Теория поля</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="solver.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#experiment">К эксперименту</a>
+  <div class="wrap">
+    <header>
+      <p class="course">Теория поля</p>
+      <h1>Кинк и <em>антикинк</em></h1>
+    </header>
+    <main id="experiment">
+      <nav class="scenarios" aria-label="Сценарий столкновения">
+        <button data-preset="escape" aria-pressed="true">Разлёт</button>
+        <button data-preset="capture" aria-pressed="false">Захват · бион</button>
+        <button data-preset="resonance" aria-pressed="false">Два отскока</button>
+      </nav>
+      <section class="visual" aria-label="Эволюция поля">
+        
+        <p class="scenario-note" id="scenario-note">После столкновения кинк и антикинк расходятся, оставляя волны излучения.</p>
+        <figure class="plot"><figcaption><span><i class="swatch field-swatch"></i>Поле <b id="field-label">φ</b></span><span class="plot-hint">Пунктир — вакуумы ±η</span></figcaption><canvas id="field-plot" role="img" aria-label="Профиль поля как функция пространственной координаты">График поля φ(t,x).</canvas></figure>
+        <figure class="plot energy-plot"><figcaption><span><i class="swatch energy-swatch"></i>Плотность энергии <b id="density-label">ℰ</b></span></figcaption><canvas id="energy-plot" role="img" aria-label="Плотность энергии как функция пространственной координаты">График плотности энергии.</canvas></figure>
+
+        <div id="bion-energy" hidden>
+          <span>В области |x| ≤ 15ℓ<sub>K</sub> осталось <b id="bion-percent">—</b> начальной энергии пары</span>
+          <div class="energy-track" aria-hidden="true"><div id="bion-bar"></div></div>
+        </div>
+        <div class="playback">
+          <div class="timeline-label"><label for="timeline">Время <output id="time-label">t = 0,00</output></label><span id="duration-label">до t = 140</span></div>
+          <input id="timeline" type="range" min="0" max="140" step="0.05" value="0" aria-label="Время эволюции" disabled>
+          <div class="transport"><button class="primary" id="play" disabled>▶ Запустить</button><button id="restart" aria-label="Вернуться к началу" disabled>В начало</button><button id="step" disabled>Шаг</button><label class="speed-choice">Темп <select id="speed"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label></div>
+        </div>
+        
+        <div class="calculation-status"><progress id="progress" max="1" value="0" aria-label="Прогресс расчёта"></progress><p id="status" role="status" aria-live="polite">Подготовка расчёта…</p></div>
+      </section>
+
+      <details class="parameters"><summary>Параметры эксперимента</summary>
+        <form id="parameters-form" novalidate>
+          <fieldset><legend>Теория</legend><label class="unit-choice">Величины <select id="units"><option value="physical">φ, x, t</option><option value="normalized">φ/η, x/ℓK, t/ℓK</option></select></label>
+            <div class="parameter"><label for="eta-number">Вакуумы <span>±η</span></label><input id="eta-number" type="number" min="0.25" max="3" step="any" value="1" aria-label="Параметр η"><input id="eta-range" type="range" min="0.25" max="3" step="0.05" value="1" aria-label="Регулятор η" data-key="eta"></div>
+            <div class="parameter"><label for="lambda-number">Коэффициент <span>λ</span></label><input id="lambda-number" type="number" min="0.125" max="4" step="any" value="0.5" aria-label="Параметр λ"><input id="lambda-range" type="range" min="0.125" max="4" step="0.025" value="0.5" aria-label="Регулятор λ" data-key="lambda"></div>
+            <p class="scale-note">Ширина кинка <span>ℓ<sub>K</sub> = 1/(η√(2λ)) = <b id="width-value">1</b></span></p>
+          </fieldset>
+          <fieldset><legend>Начальные условия</legend>
+            <label class="symmetry"><input id="symmetric" type="checkbox" checked><span>Симметричное столкновение</span></label>
+            <p class="parameter-help">Координаты — в единицах ℓ<sub>K</sub>.<br>Скорости — доли скорости света.</p>
+            <div class="parameter"><label for="xK-number">Центр кинка <span>x<sub>K</sub>/ℓ<sub>K</sub></span></label><input id="xK-number" type="number" min="-30" max="30" step="any" value="-10" aria-label="Начальная координата кинка"><input id="xK-range" type="range" min="-30" max="30" step="0.5" value="-10" aria-label="Регулятор координаты кинка" data-key="xK"></div>
+            <div class="parameter"><label for="xA-number">Центр антикинка <span>x<sub>K̄</sub>/ℓ<sub>K</sub></span></label><input id="xA-number" type="number" min="-30" max="30" step="any" value="10" aria-label="Начальная координата антикинка" disabled><input id="xA-range" type="range" min="-30" max="30" step="0.5" value="10" aria-label="Регулятор координаты антикинка" data-key="xA" disabled></div>
+            <div class="parameter"><label for="vK-number">Скорость кинка <span>v<sub>K</sub></span></label><input id="vK-number" type="number" min="-0.8" max="0.8" step="any" value="0.35" aria-label="Начальная скорость кинка"><input id="vK-range" type="range" min="-0.8" max="0.8" step="0.0001" value="0.35" aria-label="Регулятор скорости кинка" data-key="vK"></div>
+            <div class="parameter"><label for="vA-number">Скорость антикинка <span>v<sub>K̄</sub></span></label><input id="vA-number" type="number" min="-0.8" max="0.8" step="any" value="-0.35" aria-label="Начальная скорость антикинка" disabled><input id="vA-range" type="range" min="-0.8" max="0.8" step="0.0001" value="-0.35" aria-label="Регулятор скорости антикинка" data-key="vA" disabled></div>
+          </fieldset>
+          <p id="form-error" role="alert" hidden></p>
+          <button class="primary apply" type="submit" id="apply">Применить и рассчитать</button>
+          <p id="pending" class="pending">Параметры соответствуют графикам.</p>
+        </form>
+      </details>
+    </main>
+
+    <section class="explanation" aria-label="О модели и расчёте">
+      <details><summary>Что здесь происходит</summary><div class="explanation-grid"><div><h3>Поле образует частицы</h3><p>Кинк соединяет вакуумы −η и +η, антикинк — +η и −η. Энергия каждого перехода сосредоточена в небольшой области. У пары суммарный топологический заряд Q = 0, поэтому топология допускает её исчезновение с переходом энергии в излучение.</p></div><div><h3>Захват и резонансные окна</h3><p>При встречных скоростях выше v ≈ 0,26 пара разлетается после первой встречи. Ниже этого порога интервалы захвата чередуются с окнами разлёта после нескольких встреч. При столкновении энергия может переходить из поступательного движения во внутренние колебания. Если ко второму столкновению фаза подходит, часть энергии возвращается и пара расходится. Поэтому меньшая скорость иногда приводит к разлёту, а большая — к захвату.</p></div><div><h3>Два параметра, одна динамика</h3><p>В переменных u = φ/η, ξ = x/ℓ<sub>K</sub> и τ = t/ℓ<sub>K</sub> уравнение имеет вид u<sub>ττ</sub> − u<sub>ξξ</sub> + 2u(u² − 1) = 0. При одинаковых безразмерных начальных условиях η и λ меняют масштабы, сохраняя картину столкновения.</p></div></div></details>
+      <details><summary>Уравнение и точность расчёта</summary><div class="diagnostics"><span>Энергия <b id="total-energy">—</b></span><span>|ΔE|/E<sub>нач</sub> <b id="energy-error">—</b></span><span>Заряд <b>Q = 0</b></span></div><p>V(φ) = λ(φ² − η²)², φ<sub>tt</sub> − φ<sub>xx</sub> + 4λφ(φ² − η²) = 0.</p><p><span >ℰ = ½φ<sub>t</sub>² + ½φ<sub>x</sub>² + V(φ)</span></p><div class="method"><p>Начальное поле — сумма лоренцево сокращённых профилей кинка и антикинка с вычитанием η. Начальная производная по времени задаёт выбранные скорости. Эта сумма служит приближением для хорошо разнесённых объектов; далее решается полное нелинейное уравнение.</p><p>Сценарий захвата длится до τ = 300, остальные — до τ = 140. Пространственный шаг Δξ = 0,05, шаг времени Δτ = 0,01; разностная схема четвёртого порядка по пространству и схема Верле по времени. Края расчётной области удалены дальше, чем свет проходит за всё время эксперимента. Поглощение и искусственное трение не добавлены.</p><p>Энергия E вычисляется по всей расчётной области, включая волны вне видимого окна. Показатель |ΔE|/E<sub>нач</sub> отслеживает ошибку сохранения дискретной энергии. Графики сохраняются каждые 0,2 единицы τ; промежуточные изображения интерполируются. В сценарии захвата цветом отмечен интервал |x| ≤ 15ℓ<sub>K</sub>. Доля энергии равна интегралу плотности по этому интервалу, делённому на начальную энергию всего поля.</p><p>Три готовых сценария задают η = 1, λ = 1/2 и центры ±10ℓ<sub>K</sub>. Сценарии и резонансные окна описаны в работе <a href="https://roygoodman.net/publication/gh-siads-05/gh-siads-05.pdf" target="_blank" rel="noopener noreferrer">R. H. Goodman, R. Haberman (2005)</a>.</p></div></details>
+    </section>
+    
+  </div>
+</body>
+</html>
