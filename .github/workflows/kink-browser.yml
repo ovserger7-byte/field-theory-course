@@ -1,0 +1,23 @@
+name: Kink–antikink browser tests
+
+on:
+  pull_request:
+    paths:
+      - 'kink-antikink/**'
+      - '.github/workflows/kink-browser.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install playwright==1.55.0
+      - run: python -m playwright install --with-deps chromium
+      - run: python kink-antikink/tests/browser.py

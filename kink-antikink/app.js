@@ -98,6 +98,11 @@
       metadata = message; frames = [];
       $('timeline').max = message.end;
     } else if (message.type === 'frames') {
+      // Cached workers can still send full-grid frames without bounds.
+      for (const frame of message.frames) {
+        frame.offset ??= 0;
+        frame.fullSize ??= frame.field.length;
+      }
       if (showBion) {
         // Integrate the displayed density by the trapezoidal rule on [-15,15].
         const { half, spacing, initialEnergy } = metadata;
