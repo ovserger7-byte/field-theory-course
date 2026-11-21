@@ -98,6 +98,11 @@
       metadata = message; frames = [];
       $('timeline').max = message.end;
     } else if (message.type === 'frames') {
+      // Cached workers can still send full-grid frames without bounds.
+      for (const frame of message.frames) {
+        frame.offset ??= 0;
+        frame.fullSize ??= frame.field.length;
+      }
       if (showBion) {
         // Integrate the displayed density by the trapezoidal rule on [-15,15].
         const { half, spacing, initialEnergy } = metadata;
@@ -105,8 +110,9 @@
         const last = Math.round((half + 15) / spacing);
         for (const frame of message.frames) {
           const d = frame.density;
-          let sum = (d[first] + d[last]) / 2;
-          for (let i = first + 1; i < last; i++) sum += d[i];
+          const lo = first - frame.offset, hi = last - frame.offset;
+          let sum = ((d[lo] ?? 0) + (d[hi] ?? 0)) / 2;
+          for (let i = Math.max(0, lo + 1); i < Math.min(hi, d.length); i++) sum += d[i];
           frame.centralShare = sum * spacing / initialEnergy;
         }
       }
@@ -149,7 +155,7 @@
           do {
             if (!initial) sim.advance(20);
             initial = false;
-            batch.push(sim.snapshot(2));
+            batch.push(sim.compactSnapshot(2));
           } while (sim.time < sim.end - sim.dt / 2 && performance.now() - started < 12);
           handleMessage({ type: 'frames', frames: batch, progress: sim.time / sim.end }, token);
           if (sim.time < sim.end - sim.dt / 2) setTimeout(chunk, 0);
@@ -189,7 +195,7 @@
     // Immediately replace the previous run with the new initial profile.
     const initial = new KinkPhysics.Simulation(parameters, { end });
     handleMessage({ type: 'start', half: initial.half, spacing: initial.dx * 2, ell: initial.ell, initialEnergy: initial.initialEnergy, end: initial.end, frameInterval: 0.2 }, token);
-    handleMessage({ type: 'frames', frames: [initial.snapshot(2)], progress: 0 }, token);
+    handleMessage({ type: 'frames', frames: [initial.compactSnapshot(2)], progress: 0 }, token);
     // file:// browsers may forbid workers. The same solver runs in short
     // main-thread chunks in that case; no server is required to open the file.
     if (location.protocol === 'file:' || typeof Worker === 'undefined') {
@@ -282,12 +288,15 @@
     const valuesA = field ? a.field : a.density;
     const valuesB = field ? b.field : b.density;
     const start = Math.max(0, Math.floor((metadata.half - half) / metadata.spacing));
-    const stop = Math.min(valuesA.length - 1, Math.ceil((metadata.half + half) / metadata.spacing));
+    const stop = Math.min(a.fullSize - 1, Math.ceil((metadata.half + half) / metadata.spacing));
     ctx.save(); ctx.beginPath(); ctx.rect(left, top, pw, ph); ctx.clip();
     ctx.beginPath();
+    const vacuum = field ? -1 : 0;
     for (let i = start; i <= stop; i++) {
       const x = (i * metadata.spacing - metadata.half) * scaleX;
-      const y = (valuesA[i] + fraction * (valuesB[i] - valuesA[i])) * scaleY;
+      const va = valuesA[i - a.offset] ?? vacuum;
+      const vb = valuesB[i - b.offset] ?? vacuum;
+      const y = (va + fraction * (vb - va)) * scaleY;
       if (i === start) ctx.moveTo(px(x), py(y)); else ctx.lineTo(px(x), py(y));
     }
     ctx.strokeStyle = field ? colors.field : colors.energy; ctx.lineWidth = field ? 2.3 : 1.8; ctx.stroke();

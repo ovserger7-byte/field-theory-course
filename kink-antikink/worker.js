@@ -11,7 +11,7 @@ self.onmessage = function ({ data }) {
     let batch = [];
     for (let step = 0; step <= totalSteps; step += frameSteps) {
       if (step) sim.advance(frameSteps);
-      batch.push(sim.snapshot(stride));
+      batch.push(sim.compactSnapshot(stride));
       if (batch.length === 20 || step === totalSteps) {
         const buffers = batch.flatMap(f => [f.field.buffer, f.density.buffer]);
         self.postMessage({ type: 'frames', frames: batch, progress: step / totalSteps }, buffers);
