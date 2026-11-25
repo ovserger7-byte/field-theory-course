@@ -21,6 +21,11 @@
     return p;
   }
 
+  function force(u, i, c) {
+    const z = u[i];
+    return (-u[i + 2] + 16 * u[i + 1] - 30 * z + 16 * u[i - 1] - u[i - 2]) * c + 2 * z * (1 - z * z);
+  }
+
   class Simulation {
     constructor(parameters = DEFAULTS, options = {}) {
       this.parameters = { ...validate(parameters) };
@@ -60,21 +65,35 @@
     accelerate() {
       const { u, a, n, dx } = this;
       const c = 1 / (12 * dx * dx);
-      for (let i = 2; i < n - 2; i++) {
-        const z = u[i];
-        a[i] = (-u[i + 2] + 16 * u[i + 1] - 30 * z + 16 * u[i - 1] - u[i - 2]) * c + 2 * z * (1 - z * z);
-      }
+      for (let i = 2; i < n - 2; i++) a[i] = force(u, i, c);
+    }
+
+    // Bounds include momenta and accelerations even if u has rounded to -1.
+    activeRange() {
+      const { u, p, a, n } = this;
+      let first = 0, last = n - 1;
+      while (first < last && u[first] === -1 && p[first] === 0 && a[first] === 0) first++;
+      while (last > first && u[last] === -1 && p[last] === 0 && a[last] === 0) last--;
+      return [first, last];
     }
 
     advance(count = 1) {
-      const { u, p, a, n, dt } = this;
+      const { u, p, a, n, dt, dx } = this;
+      const c = 1 / (12 * dx * dx);
+      // Start with a full step (also normalizes signed zero in the initial p).
+      let [first, last] = this.stepNumber ? this.activeRange() : [2, n - 3];
       for (let s = 0; s < count; s++) {
-        for (let i = 2; i < n - 2; i++) {
+        for (let i = Math.max(2, first); i <= Math.min(last, n - 3); i++) {
           p[i] += 0.5 * dt * a[i];
           u[i] += dt * p[i];
         }
-        this.accelerate();
-        for (let i = 2; i < n - 2; i++) p[i] += 0.5 * dt * a[i];
+        // The stencil can reach at most two more nodes in this force evaluation.
+        first = Math.max(2, first - 2);
+        last = Math.min(n - 3, last + 2);
+        for (let i = first; i <= last; i++) {
+          a[i] = force(u, i, c);
+          p[i] += 0.5 * dt * a[i];
+        }
         this.stepNumber++;
       }
     }
@@ -108,15 +127,25 @@
       return roots;
     }
 
-    snapshot(stride = 2) {
+    compactSnapshot(stride = 2) {
+      const [first, last] = this.activeRange();
+      // Keep the two-node halo needed by the displayed energy density.
+      const offset = Math.max(0, Math.ceil((first - 2) / stride));
+      const stop = Math.floor(Math.min(this.n - 1, last + 2) / stride);
+      const frame = this.snapshot(stride, offset, stop - offset + 1);
+      frame.offset = offset;
+      frame.fullSize = Math.floor((this.n - 1) / stride) + 1;
+      return frame;
+    }
+
+    snapshot(stride = 2, offset = 0, size = Math.floor((this.n - 1) / stride) + 1) {
       const { u, p, n, dx } = this;
-      const size = Math.floor((n - 1) / stride) + 1;
       const field = new Float32Array(size);
       const density = new Float32Array(size);
       let peak = 0;
       let extent = 20;
       for (let j = 0; j < size; j++) {
-        const i = j * stride;
+        const i = (j + offset) * stride;
         field[j] = u[i];
         const ux = i >= 2 && i < n - 2 ? (-u[i + 2] + 8 * u[i + 1] - 8 * u[i - 1] + u[i - 2]) / (12 * dx) : 0;
         const q = u[i] * u[i] - 1;
